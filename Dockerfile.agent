@@ -1,0 +1,15 @@
+# Node A - Linux Agent
+# Based on the official Jenkins SSH agent image (JDK 17)
+FROM jenkins/ssh-agent:jdk17
+
+USER root
+
+# Install common build/test tooling
+RUN apt-get update && \
+    apt-get install -y git curl unzip && \
+    rm -rf /var/lib/apt/lists/*
+
+USER jenkins
+
+# JENKINS_AGENT_SSH_PUBKEY is supplied at runtime via docker-compose/.env
+# The base image's entrypoint writes it to /home/jenkins/.ssh/authorized_keys
