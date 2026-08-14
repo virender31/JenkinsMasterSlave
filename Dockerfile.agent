@@ -1,6 +1,9 @@
 # Node A - Linux Agent
-# Based on the official Jenkins SSH agent image (JDK 17)
-FROM jenkins/ssh-agent:jdk17
+# Based on the official Jenkins SSH agent image (JDK 21)
+# NOTE: this must match the Java version the Jenkins Master itself runs on
+# (jenkins/jenkins:lts currently ships Java 21). A mismatch here causes
+# "UnsupportedClassVersionError" when the agent connects.
+FROM jenkins/ssh-agent:jdk21
 
 USER root
 
@@ -9,7 +12,9 @@ RUN apt-get update && \
     apt-get install -y git curl unzip && \
     rm -rf /var/lib/apt/lists/*
 
-USER jenkins
-
+# NOTE: intentionally NOT switching to USER jenkins here.
+# The base image's entrypoint (setup-sshd) must run as root at container
+# startup to configure sshd, host keys, and /etc/environment - it drops
+# privileges to the jenkins user internally once that setup is done.
 # JENKINS_AGENT_SSH_PUBKEY is supplied at runtime via docker-compose/.env
 # The base image's entrypoint writes it to /home/jenkins/.ssh/authorized_keys
